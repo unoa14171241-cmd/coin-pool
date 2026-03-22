@@ -50,6 +50,15 @@ async function bootstrap() {
     next();
   });
 
+  app.get("/", (_req, res) => {
+    res.json({
+      service: "lp-manager-api",
+      status: "running",
+      health: "/health",
+      docs: "See API documentation for available endpoints."
+    });
+  });
+
   app.get("/health", (_req, res) => {
     res.json({
       ok: true,
