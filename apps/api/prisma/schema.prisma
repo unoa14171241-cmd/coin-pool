@@ -1,0 +1,541 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum PositionStatus {
+  IN_RANGE
+  OUT_OF_RANGE
+  CLOSED
+}
+
+enum SyncStatus {
+  NEVER
+  SUCCESS
+  PARTIAL
+  ERROR
+}
+
+enum AutomationJobType {
+  EVALUATE
+  REBALANCE
+  COLLECT
+  COMPOUND
+  DISTRIBUTE
+}
+
+enum AutomationJobStatus {
+  QUEUED
+  LEASED
+  RUNNING
+  SUCCEEDED
+  FAILED
+  CANCELLED
+  DEAD_LETTER
+}
+
+enum AutomationExecutionStatus {
+  STARTED
+  PRECHECK_FAILED
+  TX_SUBMITTED
+  TX_CONFIRMED
+  VERIFY_FAILED
+  SNAPSHOT_UPDATED
+  COMPLETED
+  FAILED
+}
+
+enum DistributionStatus {
+  DRAFT
+  CALCULATED
+  EXECUTING
+  COMPLETED
+  FAILED
+}
+
+enum DistributionItemStatus {
+  CLAIMABLE
+  EXECUTING
+  PAID
+  FAILED
+}
+
+enum PayoutMode {
+  AUTO
+  CLAIM
+}
+
+enum StrategyRangeMode {
+  STATIC
+  DYNAMIC
+  VOLATILITY_BASED
+}
+
+enum StrategyRiskLevel {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum AutomationExecutionMode {
+  MANUAL_APPROVAL
+  AUTO_EXECUTE
+}
+
+enum CompoundScheduleMode {
+  DAILY
+  WEEKLY
+  THRESHOLD
+}
+
+enum AuditActorRole {
+  OWNER
+  OPERATOR
+  SYSTEM
+  ADMIN
+}
+
+model Position {
+  id          String         @id @default(cuid())
+  wallet      String
+  positionId  String         @unique
+  chainId     Int
+  chainName   String
+  poolAddress String
+  token0Address String
+  token1Address String
+  token0Symbol  String
+  token1Symbol  String
+  feeTier     Int
+  tickLower   Int
+  tickUpper   Int
+  createdTx   String
+  collectTx   String?
+  rebalanceTx String?
+  createdAt   DateTime       @default(now())
+  /// Saved status at write-time. Runtime API also returns computed status from currentTick vs tick range.
+  status      PositionStatus @default(IN_RANGE)
+  syncStatus  SyncStatus?
+  lastSyncAttemptAt DateTime?
+  lastSyncSuccessAt DateTime?
+  lastSyncError String?
+  lastCheck   DateTime?
+  logs        Json?
+  error       String?
+  lastCompoundAt DateTime?
+  totalCompoundedFees Float? @default(0)
+  compoundCount Int @default(0)
+
+  @@index([wallet, chainId])
+  @@index([wallet, createdAt])
+}
+
+model ActivityLog {
+  id         String   @id @default(cuid())
+  wallet     String
+  positionId String?
+  type       String
+  source     String   @default("user-action")
+  tx         String?
+  message    String
+  createdAt  DateTime @default(now())
+
+  @@index([wallet, createdAt])
+}
+
+model PositionSnapshot {
+  id                 String   @id @default(cuid())
+  positionId         String
+  chainId            Int
+  snapshotAt         DateTime @default(now())
+  currentTick        Int
+  currentPrice       Float?
+  token0Amount       Float?
+  token1Amount       Float?
+  estimatedValueUsd  Float?
+  estimatedFeesUsd   Float?
+  estimatedPnlUsd    Float?
+  estimatedIlUsd     Float?
+  estimatedApr       Float?
+  staleFlag          Boolean  @default(false)
+
+  @@index([positionId, snapshotAt])
+  @@index([chainId, snapshotAt])
+}
+
+model PoolMarketSnapshot {
+  id              String   @id @default(cuid())
+  chainId         Int
+  poolAddress     String
+  snapshotAt      DateTime @default(now())
+  currentTick     Int
+  currentPrice    Float?
+  liquidity       String?
+  volumeProxy     Float?
+  volatilityScore Float?
+
+  @@index([chainId, poolAddress, snapshotAt])
+  @@index([chainId, snapshotAt])
+}
+
+model NotificationSetting {
+  id         String   @id @default(cuid())
+  wallet     String   @unique
+  webhookUrl String?
+  telegram   String?
+  discord    String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model OnchainPositionState {
+  id          String   @id @default(cuid())
+  positionId  String   @unique
+  chainId     Int
+  owner       String?
+  operator    String?
+  token0      String?
+  token1      String?
+  fee         Int?
+  tickLower   Int?
+  tickUpper   Int?
+  liquidity   String?
+  tokensOwed0 String?
+  tokensOwed1 String?
+  updatedAt   DateTime @updatedAt
+
+  @@index([chainId, updatedAt])
+}
+
+model WalletOperatorPermission {
+  id             String   @id @default(cuid())
+  ownerWallet    String
+  operatorWallet String
+  canEvaluate    Boolean  @default(true)
+  canExecute     Boolean  @default(false)
+  canPause       Boolean  @default(false)
+  canChangeStrategy Boolean @default(false)
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([ownerWallet, operatorWallet])
+  @@index([ownerWallet, active])
+  @@index([operatorWallet, active])
+}
+
+model PendingSnapshotWrite {
+  id              String   @id @default(cuid())
+  chainId         Int
+  poolAddress     String
+  currentTick     Int
+  currentPrice    Float?
+  liquidity       String?
+  volatilityScore Float?
+  volumeProxy     Float?
+  snapshotAt      DateTime
+  createdAt       DateTime @default(now())
+  retryCount      Int      @default(0)
+  lastError       String?
+  processedAt     DateTime?
+
+  @@index([createdAt])
+  @@index([chainId, poolAddress, createdAt])
+}
+
+model AutomationPolicy {
+  id                   String   @id @default(cuid())
+  wallet               String
+  positionId           String?
+  enabled              Boolean  @default(true)
+  mode                 String   @default("BALANCED")
+  minNetBenefitUsd     Float    @default(0)
+  maxGasUsd            Float    @default(20)
+  maxSlippageBps       Int      @default(100)
+  cooldownMinutes      Int      @default(60)
+  staleSnapshotReject  Boolean  @default(true)
+  autoCollectEnabled   Boolean  @default(true)
+  autoCompoundEnabled  Boolean  @default(false)
+  autoRebalanceEnabled Boolean  @default(false)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@index([wallet, positionId])
+  @@unique([wallet, positionId])
+}
+
+model AutomationJob {
+  id             String              @id @default(cuid())
+  wallet         String
+  positionId     String?
+  chainId        Int?
+  type           AutomationJobType
+  status         AutomationJobStatus @default(QUEUED)
+  priority       Int                 @default(100)
+  scheduledAt    DateTime            @default(now())
+  leaseUntil     DateTime?
+  attempt        Int                 @default(0)
+  maxAttempts    Int                 @default(5)
+  idempotencyKey String              @unique
+  payload        Json?
+  lastError      String?
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+
+  executions AutomationExecution[]
+
+  @@index([status, scheduledAt, priority])
+  @@index([wallet, createdAt])
+}
+
+model AutomationExecution {
+  id                String                    @id @default(cuid())
+  jobId             String
+  wallet            String
+  positionId        String?
+  chainId           Int?
+  type              AutomationJobType
+  status            AutomationExecutionStatus
+  startedAt         DateTime                  @default(now())
+  finishedAt        DateTime?
+  txHash            String?
+  txStatus          String?
+  gasUsed           String?
+  effectiveGasPrice String?
+  costUsd           Float?
+  profitUsd         Float?
+  netProfitUsd      Float?
+  errorCode         String?
+  errorMessage      String?
+  context           Json?
+  createdAt         DateTime                  @default(now())
+  updatedAt         DateTime                  @updatedAt
+
+  job AutomationJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@index([jobId, startedAt])
+  @@index([wallet, startedAt])
+  @@index([type, status, startedAt])
+}
+
+model AutomationWorker {
+  id              String   @id @default(cuid())
+  workerId        String   @unique
+  version         String?
+  status          String
+  currentJobId    String?
+  lastHeartbeatAt DateTime
+  meta            Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model AutomationDaemonTick {
+  id                    String   @id @default(cuid())
+  at                    DateTime @default(now())
+  workerId              String
+  walletCount           Int
+  processed             Int
+  failed                Int
+  requeued              Int
+  processedJobIds       Json
+  failedJobIds          Json
+  processedExecutionIds Json
+  elapsedMs             Int
+  ok                    Boolean
+  error                 String?
+  createdAt             DateTime @default(now())
+
+  @@index([at])
+  @@index([workerId, at])
+}
+
+model ProfitDistribution {
+  id             String             @id @default(cuid())
+  ownerWallet    String?            // Position owner; required for new rows. Used for unique(ownerWallet, distributionAt).
+  distributionAt DateTime
+  status         DistributionStatus @default(DRAFT)
+  source         String             @default("LP")
+  chainId        Int?
+  totalProfitUsd Float              @default(0)
+  txHash         String?
+  errorMessage   String?
+  createdAt      DateTime           @default(now())
+  executedAt     DateTime?
+  updatedAt      DateTime           @updatedAt
+
+  items ProfitDistributionItem[]
+
+  @@index([distributionAt, status])
+  @@index([ownerWallet, distributionAt])
+}
+
+model ProfitDistributionItem {
+  id             String                 @id @default(cuid())
+  distributionId String
+  wallet         String
+  amountUsd      Float
+  tokenAddress   String?
+  amountToken    String?
+  status         DistributionItemStatus @default(CLAIMABLE)
+  paidTxHash     String?
+  errorMessage   String?
+  claimedAt      DateTime?
+  autoPayout     Boolean                @default(false)
+  createdAt      DateTime               @default(now())
+  updatedAt      DateTime               @updatedAt
+
+  distribution ProfitDistribution @relation(fields: [distributionId], references: [id], onDelete: Cascade)
+
+  @@index([distributionId, wallet])
+  @@index([wallet, status, createdAt])
+}
+
+model ProfitClaimIdempotency {
+  id                 String   @id @default(cuid())
+  wallet             String
+  idempotencyKey     String
+  distributionItemId String
+  status             String
+  paidTxHash         String?
+  claimedAt          DateTime?
+  errorMessage       String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@unique([wallet, idempotencyKey])
+  @@index([distributionItemId, updatedAt])
+}
+
+model DailyDistributionTrigger {
+  id             String   @id @default(cuid())
+  callerWallet   String
+  idempotencyKey String
+  targetDate     DateTime
+  targetDateStr  String   // YYYY-MM-DD for unique constraint; one trigger per date globally
+  status         String   // PENDING | COMPLETED_SUCCESS | COMPLETED_PARTIAL | FAILED
+  resultJson     Json?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([callerWallet, idempotencyKey])
+  @@unique([targetDateStr])
+  @@index([callerWallet, createdAt])
+}
+
+model DistributionWallet {
+  id           String     @id @default(cuid())
+  wallet       String     @unique
+  enabled      Boolean    @default(true)
+  payoutMode   PayoutMode @default(CLAIM)
+  minPayoutUsd Float      @default(10)
+  destination  String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+}
+
+model PositionRevenuePolicy {
+  id               String   @id @default(cuid())
+  positionId       String   @unique
+  ownerShareBps    Int
+  operatorShareBps Int
+  platformShareBps Int
+  effectiveFrom    DateTime @default(now())
+  active           Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([active, effectiveFrom])
+}
+
+model StrategyTemplate {
+  id                    String            @id @default(cuid())
+  strategyId            String            @unique
+  strategyName          String
+  description           String
+  targetChain           Int
+  dexProtocol           String
+  tokenA                String
+  tokenB                String
+  poolFeeTier           Int
+  rangeMode             StrategyRangeMode
+  rebalanceRule         Json
+  compoundRule          Json
+  riskLevel             StrategyRiskLevel
+  targetAPRNote         String?
+  enabled               Boolean           @default(true)
+  recommendedMinCapital Float?
+  gasCostWarning        String?
+  operatorFeeRate       Float             @default(0)
+  ownerProfitShareRate  Float             @default(1)
+  createdByWallet       String
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+
+  versions StrategyTemplateVersion[]
+
+  @@index([enabled, targetChain, dexProtocol])
+}
+
+model StrategyTemplateVersion {
+  id             String   @id @default(cuid())
+  templateId     String
+  version        Int
+  payload        Json
+  changeSummary  String?
+  createdByWallet String
+  createdAt      DateTime @default(now())
+
+  template StrategyTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  @@unique([templateId, version])
+  @@index([createdAt])
+}
+
+model AutomationSetting {
+  id                   String                @id @default(cuid())
+  wallet               String
+  positionId           String?
+  chainId              Int
+  strategyTemplateId   String?
+  executionMode        AutomationExecutionMode @default(MANUAL_APPROVAL)
+  autoRebalanceEnabled Boolean               @default(false)
+  autoCompoundEnabled  Boolean               @default(false)
+  compoundSchedule     CompoundScheduleMode  @default(THRESHOLD)
+  minCompoundUsd       Float?
+  maxGasUsd            Float?
+  emergencyPaused      Boolean               @default(false)
+  updatedByWallet      String
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+
+  strategyTemplate StrategyTemplate? @relation(fields: [strategyTemplateId], references: [id], onDelete: SetNull)
+
+  @@unique([wallet, positionId, chainId])
+  @@index([wallet, chainId])
+}
+
+model AuditLogV2 {
+  id           String        @id @default(cuid())
+  requestId    String?
+  actorWallet  String
+  actorRole    AuditActorRole
+  action       String
+  resourceType String
+  resourceId   String?
+  reasonCode   String?
+  reasonText   String?
+  txHash       String?
+  chainId      Int?
+  payloadJson  Json?
+  payloadHash  String?
+  createdAt    DateTime      @default(now())
+
+  @@index([actorWallet, createdAt])
+  @@index([action, createdAt])
+  @@index([resourceType, resourceId, createdAt])
+}

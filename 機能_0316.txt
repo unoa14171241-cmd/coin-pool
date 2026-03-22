@@ -1,0 +1,128 @@
+1) コアプロダクト機能（LP運用）
+ウォレット単位のLPポジション管理
+Uniswap V3ポジションの表示（レンジ、ステータス、価格関連情報）
+ポジション作成フロー（Create Position）
+Approve実行フロー（許可先バリデーション付き）
+手数料回収（Collect）操作
+リバランス（Rebalance）実行
+ポジション履歴表示（history）
+同期状態表示（NEVER / SUCCESS / PARTIAL / ERROR）
+2) ブロックチェーン同期（On-chain Sync）
+ウォレット単位のオンチェーン同期
+ポジション状態の読取・保存（OnchainPositionState）
+同期メタ情報（最終成功時刻、最終エラー、試行時刻）
+同期失敗時のフォールバック表示
+スナップショット保存基盤（Position/Pool snapshot）
+3) 分析・可視化（Analytics）
+推定価値（value）
+推定手数料（fees）
+推定PnL
+推定IL（impermanent loss）
+推定APR
+in-range / out-of-range 判定
+データ品質ラベル表示（exact / estimated / heuristic / placeholder）
+freshness/stale表示
+生成時刻表示（共通 TimestampWithAge）
+4) 戦略提案（Rule-based AI Strategy）
+市場状態評価
+推奨レンジ提案
+リバランス必要判定（shouldRebalance）
+緊急度（urgency）
+期待純便益（netBenefit）
+説明可能性（rationale, explanationLines, confidence）
+モード別戦略（CONSERVATIVE / BALANCED / AGGRESSIVE）
+5) Automation（自動運用基盤）
+Automation Policy管理（wallet/position単位）
+Automation Jobキュー（QUEUED / LEASED / RUNNING / SUCCEEDED / FAILED / ...）
+Automation Execution記録
+ワーカー実行基盤（queue tick）
+daemon常駐ループ（tick履歴）
+retry/失敗ハンドリング
+idempotency制御
+リレイヤ送信連携（Tx submission）
+on-chain確認待ち（confirmation）
+evaluate/executeエンドポイント
+6) Auto-Compound / Profit Distribution
+自動複利処理基盤（collect→swap→compound）
+日次利益分配基盤
+分配ウォレット管理
+revenue sharing（owner/operator/platform）
+Profit claim API
+claim冪等性（ProfitClaimIdempotency）
+claim中間状態（EXECUTING）と競合防止
+7) 監査・運用ログ（Activity / Audit）
+ActivityLog記録（操作イベント）
+worker/system由来イベント記録
+System Alert表示（分離表示）
+Alertタグ解析（SUCCESS LOW / RELAYER FAILURE HIGH / P95 HIGH）
+Alertのクリックフィルタ
+Alert重複抑止（クールダウン付き記録）
+daemon tick監査ログ（DB永続 + 参照API）
+監査ログcleanupエンドポイント
+8) Metrics / Observability
+/automation/metrics 集計
+フィルタ（wallet / chainId / since / type）
+失敗コード別集計（failureByErrorCode）
+type別集計（byType）
+txStatus別集計（byTxStatus）
+時系列トレンド（bucket/limit）
+relayerFailureRate / p95ElapsedMs 指標
+閾値ベースalerts算出（alerts, alertThresholds）
+ルートレイテンシ・HTTP outcome観測
+9) 認証・認可・セキュリティ
+署名認証（challenge-response）
+アクション単位 challenge（Action: METHOD /path）
+nonce消費によるリプレイ防止
+body wallet と署名walletの一致検証
+operator権限管理（owner/operator）
+共通wallet正規化
+chainId / slippage / approve先のバリデーション
+allowlistに基づく安全制御
+10) フロントエンド機能（主要画面）
+Command Center
+Create Position
+My Positions
+Position Detail
+Strategy Lab
+Automation Center
+Portfolio
+Activity
+Settings
+モバイル対応UIコンポーネント群
+11) Activity画面の高度フィルタ機能（最近の強化）
+URL同期（filter, alertFlag, alertLimit, limit, page, sort, q, qf, hideEmpty）
+検索対象切替（all/message/tx）
+検索実行トースト（ヒット件数）
+ページング（limit/page）
+並び順（latest/oldest/failed-first）
+条件チップ表示＋個別解除
+全条件Reset
+共有URLコピー
+0件フィルタの薄表示/無効化
+Hide Emptyトグル
+12) API機能（代表）
+Auth: GET /auth/challenge/:wallet
+Positions: GET /positions/:wallet, POST /positions, detail/strategy/history/preview
+Sync: 同期実行/参照系
+Activity: GET /activity/:wallet, POST /activity
+Automation: policies, operators, jobs, executions, evaluate, execute, worker tick, daemon ticks, metrics
+Profit: distributions, claim, wallets, revenue policies
+Health: GET /health
+13) データ基盤（主なテーブル）
+Position
+ActivityLog
+PositionSnapshot
+PoolMarketSnapshot
+OnchainPositionState
+PendingSnapshotWrite
+WalletOperatorPermission
+AutomationPolicy
+AutomationJob
+AutomationExecution
+AutomationWorker
+AutomationDaemonTick
+ProfitDistribution
+ProfitDistributionItem
+ProfitClaimIdempotency
+DistributionWallet
+PositionRevenuePolicy
