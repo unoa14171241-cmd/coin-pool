@@ -476,7 +476,8 @@ model StrategyTemplate {
   createdAt             DateTime          @default(now())
   updatedAt             DateTime          @updatedAt
 
-  versions StrategyTemplateVersion[]
+  versions           StrategyTemplateVersion[]
+  automationSettings AutomationSetting[]
 
   @@index([enabled, targetChain, dexProtocol])
 }
