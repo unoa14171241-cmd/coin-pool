@@ -116,8 +116,6 @@ export async function createDailyProfitDistribution(input: CreateDistributionInp
     };
   });
 
-  const dayStart = new Date(input.distributionAt);
-  dayStart.setUTCHours(0, 0, 0, 0);
   const ownerWallet = wallet;
 
   const result = await prisma.$transaction(async (tx) => {

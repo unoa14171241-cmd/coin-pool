@@ -148,8 +148,9 @@ export class SaveOnchainSnapshotService {
     }
 
     try {
-      if (typeof snapshotStore.saveBatch === "function") {
-        await snapshotStore.saveBatch(toSave);
+      const store = snapshotStore as PositionSnapshotStore;
+      if (typeof store.saveBatch === "function") {
+        await store.saveBatch(toSave);
       } else {
         await prisma.$transaction(async (tx) => {
           for (const s of toSave) {

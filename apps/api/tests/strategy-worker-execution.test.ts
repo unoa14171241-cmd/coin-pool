@@ -37,7 +37,8 @@ function buildLoadPolicies() {
           mode: "BALANCED" as const,
           minNetBenefitUsd: 5,
           autoRebalanceEnabled: true,
-          autoCompoundEnabled: true
+          autoCompoundEnabled: true,
+          maxSlippageBps: 100
         }
       ]
     ]);

@@ -61,7 +61,8 @@ describe("sync fallback behavior", () => {
         attemptedPositions: 1,
         savedSnapshots: 0,
         skippedFallback: 0,
-        errors: [{ step: "snapshot_write" as const, positionId: "1", message: "write timeout" }]
+        errors: [{ step: "snapshot_write" as const, positionId: "1", message: "write timeout" }],
+        status: "incomplete" as const
       }))
     };
     const logger = vi.fn();
