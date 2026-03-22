@@ -1,0 +1,30 @@
+# LP Manager (coin-pool) - Render.com デプロイ設定
+# Node.js プロジェクト（Python ではありません）
+
+services:
+  # API サービス (Express + Prisma)
+  - type: web
+    name: coin-pool-api
+    runtime: node
+    region: oregon
+
+    # ビルドコマンド（ルートで npm install、API をビルド）
+    buildCommand: |
+      npm install
+      npm run prisma:generate -w apps/api
+      npm run build -w apps/api
+
+    # デプロイ前：マイグレーション実行（DATABASE_URL 必須）
+    preDeployCommand: npx prisma migrate deploy --schema=apps/api/prisma/schema.prisma
+
+    # 起動コマンド
+    startCommand: npm run start -w apps/api
+
+    # 環境変数（Dashboard で設定すること）
+    # 必須: DATABASE_URL, PLATFORM_WALLET
+    # 推奨: ARBITRUM_RPC_URL, MAINNET_RPC_URL 等
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: PORT
+        value: 4000
