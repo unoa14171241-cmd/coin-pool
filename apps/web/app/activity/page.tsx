@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useAccount } from "wagmi";
 import { ErrorNotice } from "@/components/error-notice";
@@ -137,7 +137,7 @@ function parseSystemAlertFlags(message: string): {
   };
 }
 
-export default function ActivityPage() {
+function ActivityPageContent() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -936,6 +936,14 @@ export default function ActivityPage() {
       )}
       <RiskDisclosure />
     </section>
+  );
+}
+
+export default function ActivityPage() {
+  return (
+    <Suspense fallback={<div className="mx-auto max-w-7xl px-6 py-8 text-slate-400">Loading...</div>}>
+      <ActivityPageContent />
+    </Suspense>
   );
 }
 
