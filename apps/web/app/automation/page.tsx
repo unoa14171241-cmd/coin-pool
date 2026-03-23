@@ -63,6 +63,7 @@ export default function AutomationPage() {
   const { settings, setSettings } = useAutomationSettings();
   const [signedViewsLoaded, setSignedViewsLoaded] = useState(false);
   const [targetOwnerWallet, setTargetOwnerWallet] = useState("");
+  const [executionStatusFilter, setExecutionStatusFilter] = useState<ExecutionStatusFilter>("all");
   const historyWallet =
     targetOwnerWallet.trim().length > 0 && /^0x[a-fA-F0-9]{40}$/.test(targetOwnerWallet.trim())
       ? (targetOwnerWallet.trim().toLowerCase() as `0x${string}`)
@@ -106,7 +107,6 @@ export default function AutomationPage() {
   const [settingsPositionTarget, setSettingsPositionTarget] = useState<string>(GLOBAL_POSITION_KEY);
   const [batchTargetPositionIds, setBatchTargetPositionIds] = useState<string[]>([]);
   const [confirmBatchCopy, setConfirmBatchCopy] = useState(false);
-  const [executionStatusFilter, setExecutionStatusFilter] = useState<ExecutionStatusFilter>("all");
   const [workerMessage, setWorkerMessage] = useState<string | null>(null);
   const [securedRefreshMessage, setSecuredRefreshMessage] = useState<string | null>(null);
   const [smokeMessage, setSmokeMessage] = useState<string | null>(null);
