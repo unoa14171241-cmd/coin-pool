@@ -1,4 +1,4 @@
-# LP Manager (coin-pool) - Render.com デプロイ設定
+# Coin Pool - Render.com デプロイ設定
 # Node.js プロジェクト（Python ではありません）
 
 services:

@@ -1,6 +1,6 @@
 # Automation Prisma / API Draft
 
-本ドキュメントは、現行 `LP Manager` をフル自動運用へ拡張するための**実装用草案**です。  
+本ドキュメントは、現行 `Coin Pool` をフル自動運用へ拡張するための**実装用草案**です。  
 既存モデル（`Position`/`OnchainPositionState`/`ActivityLog` など）を前提に、追加モデルと API 契約を定義します。
 
 ---

@@ -2,7 +2,7 @@
 
 ## 問題の原因
 
-Render が **Python** プロジェクトと誤検知していました。LP Manager は **Node.js** プロジェクトです。
+Render が **Python** プロジェクトと誤検知していました。Coin Pool は **Node.js** プロジェクトです。
 
 ## 解決方法
 

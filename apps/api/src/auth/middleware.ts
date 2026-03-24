@@ -13,7 +13,7 @@ interface ParsedAuthMessage {
 function parseAuthMessageStrict(message: string): ParsedAuthMessage | null {
   const lines = message.split("\n");
   if (lines.length !== 6) return null;
-  if (lines[0] !== "LP Manager Authentication") return null;
+  if (lines[0] !== "Coin Pool Authentication") return null;
   if (!lines[1].startsWith("Wallet:")) return null;
   if (!lines[2].startsWith("Nonce:")) return null;
   if (!lines[3].startsWith("IssuedAt:")) return null;

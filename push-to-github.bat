@@ -33,7 +33,7 @@ echo [3/6] Adding files...
 git add .
 echo.
 echo [4/6] Committing...
-git commit -m "Initial commit: LP Manager (coin-pool)"
+git commit -m "Initial commit: Coin Pool"
 if %ERRORLEVEL% neq 0 (
   echo.
   echo Nothing to commit - repository may already be up to date.

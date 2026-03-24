@@ -103,7 +103,7 @@ export function HamburgerNav() {
             aria-label="メニュー"
           >
             <div className="flex items-center justify-between border-b border-slate-800 p-4">
-              <span className="text-sm font-semibold text-slate-200">LP Manager</span>
+              <span className="text-sm font-semibold text-slate-200">Coin Pool</span>
               <button
                 type="button"
                 onClick={() => setOpen(false)}

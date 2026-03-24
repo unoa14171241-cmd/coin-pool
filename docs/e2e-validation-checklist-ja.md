@@ -1,4 +1,4 @@
-# LP Manager E2E確認手順
+# Coin Pool E2E確認手順
 
 この手順は、現在の実装（sync/automation/positions observability 含む）を対象にした実行用チェックリストです。
 

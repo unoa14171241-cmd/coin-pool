@@ -1,6 +1,6 @@
 import type { RangePreset } from "@/lib/types";
 
-export const APP_NAME = process.env.NEXT_PUBLIC_APP_NAME ?? "LP Manager";
+export const APP_NAME = process.env.NEXT_PUBLIC_APP_NAME ?? "Coin Pool";
 export const DEFAULT_CHAIN_ID = Number(process.env.NEXT_PUBLIC_DEFAULT_CHAIN_ID ?? 42161);
 export const SUPPORTED_CHAINS = ["Arbitrum", "Ethereum", "Base", "Polygon"] as const;
 export const TARGET_PAIR = "ETH / USDC";

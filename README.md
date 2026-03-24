@@ -1,4 +1,4 @@
-# LP Manager
+# Coin Pool
 
 Uniswap V3互換DEX向けの、**非カストディアル（資産預かりなし）**な流動性ポジション管理ツールです。  
 集中流動性ポジションを可視化し、レンジ外れを検知し、再配置（Rebalance）を支援します。
@@ -282,7 +282,7 @@ APR = (累積手数料 / ポジション価値) × (365 / 運用日数)
 - サーバは固定テンプレートのメッセージを返します。
 
 ```txt
-LP Manager Authentication
+Coin Pool Authentication
 Wallet:<wallet>
 Nonce:<nonce>
 IssuedAt:<issuedAt-iso8601>
@@ -505,7 +505,7 @@ Current limitations:
 
 ## LP Auto-Strategy Engine (Rule-based AI)
 
-LP Manager は単純な「レンジ外れたら同幅再設定」から、以下の戦略エンジンへ拡張されています。
+Coin Pool は単純な「レンジ外れたら同幅再設定」から、以下の戦略エンジンへ拡張されています。
 
 - Strategy layers
   - `MarketStateDetector`: 市場状態（`RANGE` / `UP_TREND` / `DOWN_TREND` / `HIGH_VOLATILITY` / `LOW_LIQUIDITY` / `UNKNOWN`）を判定
@@ -563,7 +563,7 @@ LP Manager は単純な「レンジ外れたら同幅再設定」から、以下
 
 ## Product UX Overview (LP Operating System)
 
-LP Manager は「作成/再設定ツール」から、運用判断まで含む LP運用OS へ拡張されています。
+Coin Pool は「作成/再設定ツール」から、運用判断まで含む LP運用OS へ拡張されています。
 
 - Command Center (`/`)
   - 今日やるべきアクション、市場状態、自動化状況を集約表示

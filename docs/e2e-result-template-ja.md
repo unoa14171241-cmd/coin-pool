@@ -1,4 +1,4 @@
-# LP Manager E2E 実行結果テンプレート
+# Coin Pool E2E 実行結果テンプレート
 
 実行日: YYYY-MM-DD  
 実行者:  

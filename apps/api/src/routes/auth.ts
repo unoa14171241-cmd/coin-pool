@@ -30,7 +30,7 @@ router.get("/auth/challenge/:wallet", async (req, res) => {
   const challenge = await createChallenge(wallet, action);
   const issuedAt = challenge.issuedAt;
   const expiresAt = new Date(challenge.expiresAt).toISOString();
-  const message = `LP Manager Authentication
+  const message = `Coin Pool Authentication
 Wallet:${wallet}
 Nonce:${challenge.nonce}
 IssuedAt:${issuedAt}
