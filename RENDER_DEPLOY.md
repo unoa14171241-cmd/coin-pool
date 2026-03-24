@@ -30,8 +30,9 @@ git push origin main
   `npm install && cd apps/api && npx prisma generate && npm run build -w apps/api`
 - **Start Command**:  
   `npm run start -w apps/api`
-- **Pre-Deploy Command**（オプション）:  
-  `cd apps/api && npx prisma migrate deploy`
+- **Pre-Deploy Command**（必須・render.yaml に含む）:  
+  `npx prisma migrate deploy --schema=apps/api/prisma/schema.prisma`  
+  ※ 初回デプロイ前に `prisma/migrations/` をコミットしておくこと。マイグレーションが無いと本番DBにテーブルが作成されず `Position` テーブル不存在エラーが発生します。
 
 ### 3. 必須環境変数
 
@@ -52,3 +53,9 @@ Render Dashboard の Environment で以下を設定：
 ---
 
 **補足**: フロントエンド（Next.js）は Vercel 等でのデプロイを推奨。API のみ Render にデプロイする構成が一般的です。
+
+### 5. Web アプリをインターネットで公開する
+
+API が Render で動いたら、Web アプリを **Vercel** にデプロイすると、どこからでもアクセスできます。
+
+詳細は [`docs/VERCEL_WEB_DEPLOY.md`](docs/VERCEL_WEB_DEPLOY.md) を参照してください。

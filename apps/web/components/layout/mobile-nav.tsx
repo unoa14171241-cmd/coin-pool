@@ -6,10 +6,10 @@ import { cn } from "@/lib/utils";
 
 const MOBILE_LINKS = [
   { href: "/", label: "Home" },
+  { href: "/create-position", label: "Create" },
   { href: "/my-positions", label: "Positions" },
   { href: "/portfolio", label: "Portfolio" },
-  { href: "/activity", label: "Activity" },
-  { href: "/automation", label: "Automation" }
+  { href: "/activity", label: "Activity" }
 ];
 
 export function MobileNav() {
